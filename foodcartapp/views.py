@@ -75,15 +75,11 @@ def product_list_api(request):
 @api_view(["POST"])
 def register_order(request):
     if request.method == "POST":
-        data = request.data
-
         order_serializer = OrderSerializer(data=request.data)
         if not order_serializer.is_valid():
             return Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        items_serializer = OrderItemListSerializer(
-            data=order_serializer.data["products"]
-        )
+        items_serializer = OrderItemListSerializer(data=request.data["products"])
         if not items_serializer.is_valid():
             return Response(items_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -95,7 +91,7 @@ def register_order(request):
         )
         new_order.save()
 
-        for item in order_serializer.data["products"]:
+        for item in request.data["products"]:
             new_item = OrderItem(
                 order=new_order,
                 product=Product.objects.get(id=item["product"]),
@@ -103,7 +99,7 @@ def register_order(request):
             )
             new_item.save()
 
-        return JsonResponse(data)
+        return Response(OrderSerializer(new_order).data, status=status.HTTP_201_CREATED)
 
     else:
         return HttpResponseBadRequest("Invalid request method")

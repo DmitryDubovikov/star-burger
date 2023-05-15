@@ -13,14 +13,17 @@ class OrderItemListSerializer(serializers.ListSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    products = serializers.ListField(allow_empty=False)
+    products = serializers.ListField(allow_empty=False, write_only=True)
 
     class Meta:
         model = Order
         fields = [
+            "id",
             "firstname",
             "lastname",
             "phonenumber",
             "address",
             "products",
         ]
+        read_only_fields = ("id",)
+        # write_only_fields = ("products",)
