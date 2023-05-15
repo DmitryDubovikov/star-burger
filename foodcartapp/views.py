@@ -3,6 +3,8 @@ from django.http import JsonResponse
 from django.templatetags.static import static
 from django.http import HttpResponseBadRequest
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
 
 from .models import Product, Order, OrderItem
 
@@ -74,6 +76,32 @@ def register_order(request):
     if request.method == "POST":
         data = request.data
 
+        products_list = data.get("products")
+        if products_list == None:
+            return Response(
+                {
+                    "message": "не пустой список продуктов обязателен для формирования заказа, "
+                    "данные по ключу products не переданы!"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        elif not isinstance(products_list, list):
+            return Response(
+                {
+                    "message": "не пустой список продуктов обязателен для формирования заказа, "
+                    "данные по ключу products не являются списком!"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        elif len(products_list) == 0:
+            return Response(
+                {
+                    "message": "не пустой список продуктов обязателен для формирования заказа, "
+                    "переданный список продуктов пуст!"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         new_order = Order(
             first_name=data["firstname"],
             last_name=data["lastname"],
@@ -82,7 +110,7 @@ def register_order(request):
         )
         new_order.save()
 
-        for p in data["products"]:
+        for p in products_list:
             new_item = OrderItem(
                 order=new_order,
                 product=Product.objects.get(id=p["product"]),
