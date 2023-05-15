@@ -1,8 +1,9 @@
+import json
 from django.http import JsonResponse
 from django.templatetags.static import static
-
-import json
 from django.http import HttpResponseBadRequest
+from rest_framework.decorators import api_view
+
 from .models import Product, Order, OrderItem
 
 
@@ -68,31 +69,28 @@ def product_list_api(request):
     )
 
 
+@api_view(["POST"])
 def register_order(request):
     if request.method == "POST":
-        try:
-            data = json.loads(request.body)
+        data = request.data
 
-            new_order = Order(
-                first_name=data["firstname"],
-                last_name=data["lastname"],
-                phone_number=data["phonenumber"],
-                address=data["address"],
+        new_order = Order(
+            first_name=data["firstname"],
+            last_name=data["lastname"],
+            phone_number=data["phonenumber"],
+            address=data["address"],
+        )
+        new_order.save()
+
+        for p in data["products"]:
+            new_item = OrderItem(
+                order=new_order,
+                product=Product.objects.get(id=p["product"]),
+                quantity=p["quantity"],
             )
-            new_order.save()
+            new_item.save()
 
-            for p in data["products"]:
-                new_item = OrderItem(
-                    order=new_order,
-                    product=Product.objects.get(id=p["product"]),
-                    quantity=p["quantity"],
-                )
-                new_item.save()
+        return JsonResponse(data)
 
-            return JsonResponse(data)
-        except json.JSONDecodeError:
-            return HttpResponseBadRequest("Invalid JSON")
     else:
         return HttpResponseBadRequest("Invalid request method")
-
-    return JsonResponse({})
