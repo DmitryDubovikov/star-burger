@@ -22,10 +22,6 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    # search_fields = [
-    #     "first_name",
-    #     "last_name",
-    # ]
     inlines = [OrderItemInline]
 
 

@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .models import Product, Order, OrderItem
+from .serializers import OrderSerializer, OrderItemListSerializer
 
 
 def banners_list_api(request):
@@ -76,78 +77,29 @@ def register_order(request):
     if request.method == "POST":
         data = request.data
 
-        products_list = data.get("products")
-        if products_list == None:
-            return Response(
-                {
-                    "message": "не пустой список продуктов обязателен для формирования заказа, "
-                    "данные по ключу products не переданы!"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        elif not isinstance(products_list, list):
-            return Response(
-                {
-                    "message": "не пустой список продуктов обязателен для формирования заказа, "
-                    "данные по ключу products не являются списком!"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        elif len(products_list) == 0:
-            return Response(
-                {
-                    "message": "не пустой список продуктов обязателен для формирования заказа, "
-                    "переданный список продуктов пуст!"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        else:
-            for p in products_list:
-                try:
-                    obj = Product.objects.get(pk=p["product"])
-                except Product.DoesNotExist:
-                    id = p["product"]
-                    return Response(
-                        {"message": f"продукт c id {id} не найден!"},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+        order_serializer = OrderSerializer(data=request.data)
+        if not order_serializer.is_valid():
+            return Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        firstname = data.get("firstname")
-        lastname = data.get("lastname")
-        phonenumber = data.get("phonenumber")
-        address = data.get("address")
-
-        if firstname == None or not isinstance(firstname, str) or firstname == "":
-            return Response(
-                {"message": "имя должно быть не пустой строкой!"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        if lastname == None or not isinstance(lastname, str) or lastname == "":
-            return Response(
-                {"message": "фамилия должна быть не пустой строкой!"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        if address == None or not isinstance(address, str) or address == "":
-            return Response(
-                {"message": "адрес должен быть не пустой строкой!"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        items_serializer = OrderItemListSerializer(
+            data=order_serializer.data["products"]
+        )
+        if not items_serializer.is_valid():
+            return Response(items_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         new_order = Order(
-            first_name=firstname,
-            last_name=lastname,
-            phone_number=phonenumber,
-            address=address,
+            firstname=order_serializer.data["firstname"],
+            lastname=order_serializer.data["lastname"],
+            phonenumber=order_serializer.data["phonenumber"],
+            address=order_serializer.data["address"],
         )
         new_order.save()
 
-        for p in products_list:
+        for item in order_serializer.data["products"]:
             new_item = OrderItem(
                 order=new_order,
-                product=Product.objects.get(id=p["product"]),
-                quantity=p["quantity"],
+                product=Product.objects.get(id=item["product"]),
+                quantity=item["quantity"],
             )
             new_item.save()
 
