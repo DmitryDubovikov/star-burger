@@ -102,11 +102,34 @@ def register_order(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        firstname = data.get("firstname")
+        lastname = data.get("lastname")
+        phonenumber = data.get("phonenumber")
+        address = data.get("address")
+
+        if firstname == None or not isinstance(firstname, str) or firstname == "":
+            return Response(
+                {"message": "имя должно быть не пустой строкой!"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if lastname == None or not isinstance(lastname, str) or lastname == "":
+            return Response(
+                {"message": "фамилия должна быть не пустой строкой!"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if address == None or not isinstance(address, str) or address == "":
+            return Response(
+                {"message": "адрес должен быть не пустой строкой!"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         new_order = Order(
-            first_name=data["firstname"],
-            last_name=data["lastname"],
-            phone_number=data["phonenumber"],
-            address=data["address"],
+            first_name=firstname,
+            last_name=lastname,
+            phone_number=phonenumber,
+            address=address,
         )
         new_order.save()
 
