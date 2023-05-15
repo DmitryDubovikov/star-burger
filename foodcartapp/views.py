@@ -101,6 +101,16 @@ def register_order(request):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        else:
+            for p in products_list:
+                try:
+                    obj = Product.objects.get(pk=p["product"])
+                except Product.DoesNotExist:
+                    id = p["product"]
+                    return Response(
+                        {"message": f"продукт c id {id} не найден!"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
         firstname = data.get("firstname")
         lastname = data.get("lastname")
