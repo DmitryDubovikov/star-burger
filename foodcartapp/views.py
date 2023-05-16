@@ -92,9 +92,11 @@ def register_order(request):
         new_order.save()
 
         for item in request.data["products"]:
+            product = Product.objects.get(id=item["product"])
             new_item = OrderItem(
                 order=new_order,
-                product=Product.objects.get(id=item["product"]),
+                product=product,
+                price=product.price,
                 quantity=item["quantity"],
             )
             new_item.save()
