@@ -122,6 +122,11 @@ class Order(models.Model):
         (IN_DELIVERY, "In delivery"),
         (CLOSED, "Closed"),
     ]
+
+    ONLINE = "ON"
+    CASH = "CA"
+    PAYMENT_METHODS = [(ONLINE, "Онлайн"), (CASH, "Наличными")]
+
     firstname = models.CharField(
         max_length=100, null=False, blank=False, verbose_name="Имя"
     )
@@ -141,6 +146,11 @@ class Order(models.Model):
     registrated_at = models.DateTimeField(default=timezone.now)
     called_at = models.DateTimeField(blank=True, null=True)
     delivered_at = models.DateTimeField(blank=True, null=True)
+    payment_method = models.CharField(
+        max_length=2,
+        choices=PAYMENT_METHODS,
+        default=CASH,
+    )
 
     objects = models.Manager()  # The default manager.
     objects_decorated = OrderDecoratedManager()  # Our custom manager.
