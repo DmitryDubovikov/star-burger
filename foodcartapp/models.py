@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.db.models import F, Sum
+from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
 
@@ -137,6 +138,9 @@ class Order(models.Model):
         default=NEW,
     )
     comment = models.TextField()
+    registrated_at = models.DateTimeField(default=timezone.now)
+    called_at = models.DateTimeField(blank=True, null=True)
+    delivered_at = models.DateTimeField(blank=True, null=True)
 
     objects = models.Manager()  # The default manager.
     objects_decorated = OrderDecoratedManager()  # Our custom manager.
