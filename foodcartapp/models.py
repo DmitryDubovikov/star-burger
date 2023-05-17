@@ -142,7 +142,7 @@ class Order(models.Model):
         choices=STATUS_CHOICES,
         default=NEW,
     )
-    comment = models.TextField()
+    comment = models.TextField(blank=True)
     registrated_at = models.DateTimeField(default=timezone.now)
     called_at = models.DateTimeField(blank=True, null=True)
     delivered_at = models.DateTimeField(blank=True, null=True)
@@ -150,6 +150,9 @@ class Order(models.Model):
         max_length=2,
         choices=PAYMENT_METHODS,
         default=CASH,
+    )
+    restaurant = models.ForeignKey(
+        Restaurant, null=True, blank=True, on_delete=models.CASCADE
     )
 
     objects = models.Manager()  # The default manager.

@@ -3,12 +3,13 @@ from django.shortcuts import redirect, render
 from django.views import View
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import user_passes_test
+from django.db.models import Q
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 
 
-from foodcartapp.models import Product, Restaurant, Order
+from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem, OrderItem
 
 
 class Login(forms.Form):
@@ -106,10 +107,44 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url="restaurateur:login")
 def view_orders(request):
-    orders = Order.objects_decorated.exclude(status="CL")
+    orders = Order.objects_decorated.exclude(status="CL").order_by("status")
+
+    orders_list = list(orders.values_list("id", flat=True))
+
+    filters = Q()
+    for value in orders_list:
+        filters |= Q(order=value)
+
+    order_items = OrderItem.objects.filter(filters)
+
+    availability = dict()
+    for el in RestaurantMenuItem.objects.filter(availability=True).order_by("product"):
+        if el.product in availability.keys():
+            availability[el.product].append(el.restaurant)
+        else:
+            availability[el.product] = [el.restaurant]
+
+    context_data = []
+    for order in orders:
+        av_rests = ""
+        if order.restaurant:
+            av_rests = f"Готовит {order.restaurant}"
+        else:
+            order_aviability = []
+            for item in order_items.filter(order=order):
+                order_aviability.append(set(availability[item.product]))
+            rests = set.intersection(*order_aviability)
+            if len(rests) == 0:
+                av_rests = "Невозможно приготовить ни в одном ресторане"
+            else:
+                av_rests = "Может быть приготовлен ресторанами: " + ", ".join(
+                    map(str, rests)
+                )
+
+        context_data.append({"order": order, "av_rests": av_rests})
 
     return render(
         request,
         template_name="order_items.html",
-        context={"orders": orders},
+        context={"context_data": context_data},
     )

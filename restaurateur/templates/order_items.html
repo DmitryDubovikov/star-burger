@@ -17,26 +17,28 @@
       <th>ID заказа</th>
       <th>Статус</th>
       <th>Способ оплаты</th>
-      <th>Стоимость заказа</th>
+      <th>Стоимость</th>
       <th>Клиент</th>
       <th>Телефон</th>
       <th>Адрес доставки</th>
       <th>Комментарий</th>
+      <th>Рестораны</th>
       <th>Ссылка на админку</th>
     </tr>
 
-    {% for order in orders %}
+    {% for el in context_data %}
       <tr>
-        <td>{{ order.id }}</td>
-        <td>{{ order.get_status_display }}</td>
-        <td>{{ order.get_payment_method_display }}</td>
-        <td>{{ order.total_sum }}</td>
-        <td>{{ order.firstname }} {{ order.lastname }}</td>
-        <td>{{ order.phonenumber }}</td>
-        <td>{{ order.address }}</td>
-        <th>{{ order.comment }}</th>
-        <td><a href=" {% url 'admin:foodcartapp_order_change' object_id=order.id %}?next={{ request.get_full_path|urlencode }} ">
-          Редактировать заказ {{ order.id }}</a></td>
+        <td>{{ el.order.id }}</td>
+        <td>{{ el.order.get_status_display }}</td>
+        <td>{{ el.order.get_payment_method_display }}</td>
+        <td>{{ el.order.total_sum }}</td>
+        <td>{{ el.order.firstname }} {{ el.order.lastname }}</td>
+        <td>{{ el.order.phonenumber }}</td>
+        <td>{{ el.order.address }}</td>
+        <th>{{ el.order.comment }}</th>
+        <th> {{ el.av_rests }}</th>
+        <td><a href=" {% url 'admin:foodcartapp_order_change' object_id=el.order.id %}?next={{ request.get_full_path|urlencode }} ">
+          Редактировать заказ {{ el.order.id }}</a></td>
       </tr>
     {% endfor %}
    </table>
