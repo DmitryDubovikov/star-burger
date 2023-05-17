@@ -136,6 +136,7 @@ class Order(models.Model):
         choices=STATUS_CHOICES,
         default=NEW,
     )
+    comment = models.TextField()
 
     objects = models.Manager()  # The default manager.
     objects_decorated = OrderDecoratedManager()  # Our custom manager.
