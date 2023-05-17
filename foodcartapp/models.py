@@ -111,6 +111,16 @@ class OrderDecoratedManager(models.Manager):
 
 
 class Order(models.Model):
+    NEW = "NE"
+    IN_RESTAURANT = "RE"
+    IN_DELIVERY = "DE"
+    CLOSED = "CL"
+    STATUS_CHOICES = [
+        (NEW, "New"),
+        (IN_RESTAURANT, "In restaurant"),
+        (IN_DELIVERY, "In delivery"),
+        (CLOSED, "Closed"),
+    ]
     firstname = models.CharField(
         max_length=100, null=False, blank=False, verbose_name="Имя"
     )
@@ -121,6 +131,11 @@ class Order(models.Model):
     address = models.CharField(
         max_length=100, null=False, blank=False, verbose_name="Адрес"
     )
+    status = models.CharField(
+        max_length=2,
+        choices=STATUS_CHOICES,
+        default=NEW,
+    )
 
     objects = models.Manager()  # The default manager.
     objects_decorated = OrderDecoratedManager()  # Our custom manager.
@@ -130,6 +145,7 @@ class Order(models.Model):
         verbose_name_plural = "Заказы"
         indexes = [
             models.Index(fields=["firstname"]),
+            models.Index(fields=["status"]),
         ]
 
     def __str__(self):
