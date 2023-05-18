@@ -59,6 +59,11 @@ pip install -r requirements.txt
 SECRET_KEY=django-insecure-0if40nf4nf93n4
 ```
 
+Определите переменную окружения `YANDEX_GEOCODER_API_KEY`. В файле `.env` в каталоге `star_burger/` добавьте API ключ Яндекс-геокодера (полученный в кабинете разработчика Яндекса):
+```sh
+YANDEX_GEOCODER_API_KEY=your_yandex_api_key
+```
+
 Создайте файл базы данных SQLite и отмигрируйте её следующей командой:
 
 ```sh

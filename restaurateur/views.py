@@ -4,10 +4,12 @@ from django.views import View
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q
-
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
+from django.conf import settings
 
+import requests
+from geopy import distance
 
 from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem, OrderItem
 
@@ -107,7 +109,11 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url="restaurateur:login")
 def view_orders(request):
-    orders = Order.objects_decorated.exclude(status="CL").order_by("status")
+    orders = (
+        Order.objects_decorated.exclude(status="CL")
+        .order_by("status")
+        .prefetch_related("restaurant")
+    )
 
     orders_list = list(orders.values_list("id", flat=True))
 
@@ -115,10 +121,16 @@ def view_orders(request):
     for value in orders_list:
         filters |= Q(order=value)
 
-    order_items = OrderItem.objects.filter(filters)
+    # оставляем только строки заказов orders
+    order_items = OrderItem.objects.filter(filters).prefetch_related("product")
 
     availability = dict()
-    for el in RestaurantMenuItem.objects.filter(availability=True).order_by("product"):
+    for el in (
+        RestaurantMenuItem.objects.filter(availability=True)
+        .order_by("product")
+        .prefetch_related("product")
+        .prefetch_related("restaurant")
+    ):
         if el.product in availability.keys():
             availability[el.product].append(el.restaurant)
         else:
@@ -126,25 +138,70 @@ def view_orders(request):
 
     context_data = []
     for order in orders:
-        av_rests = ""
+        rests_info = ""
         if order.restaurant:
-            av_rests = f"Готовит {order.restaurant}"
+            rests_info = f"Готовит {order.restaurant}"
         else:
             order_aviability = []
             for item in order_items.filter(order=order):
                 order_aviability.append(set(availability[item.product]))
-            rests = set.intersection(*order_aviability)
-            if len(rests) == 0:
-                av_rests = "Невозможно приготовить ни в одном ресторане"
-            else:
-                av_rests = "Может быть приготовлен ресторанами: " + ", ".join(
-                    map(str, rests)
-                )
+            rests = [
+                {"rest": r, "dist": 0} for r in set.intersection(*order_aviability)
+            ]
 
-        context_data.append({"order": order, "av_rests": av_rests})
+            if len(rests) == 0:
+                rests_info = "Невозможно приготовить ни в одном ресторане"
+            else:
+                for r in rests:
+                    r["dist"] = calc_distance(r["rest"].address, order.address)
+
+                sorted_rests = sorted(rests, key=lambda x: x["dist"])
+
+                rests_info = "Может быть приготовлен ресторанами: "
+                for el in sorted_rests:
+                    rests_info += f"{el['rest']} \
+                        ({'не определено ' if el['dist'] == 999999 else el['dist'] } км) \n"
+
+        context_data.append({"order": order, "rests_info": rests_info})
 
     return render(
         request,
         template_name="order_items.html",
         context={"context_data": context_data},
     )
+
+
+def calc_distance(adress1, adress2):
+    coord1 = fetch_coordinates(adress1)
+    coord2 = fetch_coordinates(adress2)
+
+    if not coord1 or not coord2:
+        return 999999
+
+    # taking pair of (lat, lon) tuples
+    return round(
+        distance.distance((coord1[1], coord1[0]), (coord2[1], coord2[0])).km, 3
+    )
+
+
+def fetch_coordinates(address):
+    apikey = settings.YANDEX_GEOCODER_API_KEY
+
+    base_url = "https://geocode-maps.yandex.ru/1.x"
+    response = requests.get(
+        base_url,
+        params={
+            "geocode": address,
+            "apikey": apikey,
+            "format": "json",
+        },
+    )
+    response.raise_for_status()
+    found_places = response.json()["response"]["GeoObjectCollection"]["featureMember"]
+
+    if not found_places:
+        return None
+
+    most_relevant = found_places[0]
+    lon, lat = most_relevant["GeoObject"]["Point"]["pos"].split(" ")
+    return lon, lat
