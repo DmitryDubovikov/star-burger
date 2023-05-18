@@ -12,6 +12,7 @@ import requests
 from geopy import distance
 
 from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem, OrderItem
+from placesapp.models import Place
 
 
 class Login(forms.Form):
@@ -187,6 +188,10 @@ def calc_distance(adress1, adress2):
 def fetch_coordinates(address):
     apikey = settings.YANDEX_GEOCODER_API_KEY
 
+    place = Place.objects.filter(address=address)
+    if len(place) > 0:
+        return place[0].lon, place[0].lat
+
     base_url = "https://geocode-maps.yandex.ru/1.x"
     response = requests.get(
         base_url,
@@ -204,4 +209,8 @@ def fetch_coordinates(address):
 
     most_relevant = found_places[0]
     lon, lat = most_relevant["GeoObject"]["Point"]["pos"].split(" ")
+
+    new_place = Place(address=address, lon=lon, lat=lat)
+    new_place.save()
+
     return lon, lat
