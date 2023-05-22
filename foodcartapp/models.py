@@ -137,7 +137,7 @@ class Order(models.Model):
         default=NEW,
     )
     comment = models.TextField(blank=True)
-    registrated_at = models.DateTimeField(default=timezone.now)
+    registered_at = models.DateTimeField(default=timezone.now)
     called_at = models.DateTimeField(blank=True, null=True)
     delivered_at = models.DateTimeField(blank=True, null=True)
     payment_method = models.CharField(
