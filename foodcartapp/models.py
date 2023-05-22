@@ -141,9 +141,7 @@ class Order(models.Model):
     called_at = models.DateTimeField(blank=True, null=True)
     delivered_at = models.DateTimeField(blank=True, null=True)
     payment_method = models.CharField(
-        max_length=2,
-        choices=PAYMENT_METHODS,
-        default=CASH,
+        max_length=2, choices=PAYMENT_METHODS, blank=False
     )
     restaurant = models.ForeignKey(
         Restaurant, null=True, blank=True, on_delete=models.CASCADE
