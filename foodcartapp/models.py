@@ -127,16 +127,10 @@ class Order(models.Model):
     CASH = "CA"
     PAYMENT_METHODS = [(ONLINE, "Онлайн"), (CASH, "Наличными")]
 
-    firstname = models.CharField(
-        max_length=100, null=False, blank=False, verbose_name="Имя"
-    )
-    lastname = models.CharField(
-        max_length=100, null=False, blank=False, verbose_name="Фамилия"
-    )
+    firstname = models.CharField(max_length=100, blank=False, verbose_name="Имя")
+    lastname = models.CharField(max_length=100, blank=False, verbose_name="Фамилия")
     phonenumber = PhoneNumberField(verbose_name="Телефон")
-    address = models.CharField(
-        max_length=100, null=False, blank=False, verbose_name="Адрес"
-    )
+    address = models.CharField(max_length=100, blank=False, verbose_name="Адрес")
     status = models.CharField(
         max_length=2,
         choices=STATUS_CHOICES,
@@ -190,7 +184,6 @@ class OrderItem(models.Model):
         max_digits=8,
         decimal_places=2,
         blank=False,
-        null=False,
         validators=[MinValueValidator(0)],
     )
 
