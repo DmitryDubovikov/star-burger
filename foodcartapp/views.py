@@ -85,31 +85,23 @@ def register_order(request):
         if not items_serializer.is_valid():
             return Response(items_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            new_order = Order(
-                firstname=order_serializer.data["firstname"],
-                lastname=order_serializer.data["lastname"],
-                phonenumber=order_serializer.data["phonenumber"],
-                address=order_serializer.data["address"],
-            )
-            new_order.save()
+        new_order = Order(
+            firstname=order_serializer.data["firstname"],
+            lastname=order_serializer.data["lastname"],
+            phonenumber=order_serializer.data["phonenumber"],
+            address=order_serializer.data["address"],
+        )
+        new_order.save()
 
-            for item in request.data["products"]:
-                product = Product.objects.get(id=item["product"])
-                new_item = OrderItem(
-                    order=new_order,
-                    product=product,
-                    price=product.price,
-                    quantity=item["quantity"],
-                )
-                new_item.save()
-
-        except Exception as e:
-            transaction.set_rollback()
-            return Response(
-                {"message: ": "Error: " + str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        for item in request.data["products"]:
+            product = Product.objects.get(id=item["product"])
+            new_item = OrderItem(
+                order=new_order,
+                product=product,
+                price=product.price,
+                quantity=item["quantity"],
             )
+            new_item.save()
 
         return Response(OrderSerializer(new_order).data, status=status.HTTP_201_CREATED)
 
