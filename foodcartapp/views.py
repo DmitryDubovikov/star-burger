@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .models import Product, Order, OrderItem
-from .serializers import OrderSerializer, OrderItemListSerializer
+from .serializers import OrderSerializer
 
 
 def banners_list_api(request):
@@ -81,20 +81,16 @@ def register_order(request):
         if not order_serializer.is_valid():
             return Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        items_serializer = OrderItemListSerializer(data=request.data["products"])
-        if not items_serializer.is_valid():
-            return Response(items_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
         new_order = Order(
-            firstname=order_serializer.data["firstname"],
-            lastname=order_serializer.data["lastname"],
-            phonenumber=order_serializer.data["phonenumber"],
-            address=order_serializer.data["address"],
+            firstname=order_serializer.validated_data["firstname"],
+            lastname=order_serializer.validated_data["lastname"],
+            phonenumber=order_serializer.validated_data["phonenumber"],
+            address=order_serializer.validated_data["address"],
         )
         new_order.save()
 
-        for item in request.data["products"]:
-            product = Product.objects.get(id=item["product"])
+        for item in order_serializer.validated_data["products"]:
+            product = item["product"]
             new_item = OrderItem(
                 order=new_order,
                 product=product,
