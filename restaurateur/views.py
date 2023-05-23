@@ -156,12 +156,14 @@ def view_orders(request):
                 for r in rests:
                     r["dist"] = calc_distance(r["rest"].address, order.address)
 
-                sorted_rests = sorted(rests, key=lambda x: x["dist"])
+                sorted_rests = sorted(
+                    rests, key=lambda x: x["dist"] if x["dist"] else 999999
+                )
 
                 rests_info = "Может быть приготовлен ресторанами: "
                 for el in sorted_rests:
                     rests_info += f"{el['rest']} \
-                        ({'не определено ' if el['dist'] == 999999 else el['dist'] } км) \n"
+                        ({'не определено ' if el['dist'] == None else el['dist'] } км) \n"
 
         context_data.append({"order": order, "rests_info": rests_info})
 
@@ -177,7 +179,7 @@ def calc_distance(adress1, adress2):
     coord2 = fetch_coordinates(adress2)
 
     if not coord1 or not coord2:
-        return 999999
+        return None
 
     # taking pair of (lat, lon) tuples
     return round(
