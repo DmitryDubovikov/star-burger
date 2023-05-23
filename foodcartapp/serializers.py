@@ -24,12 +24,10 @@ class OrderSerializer(serializers.ModelSerializer):
         read_only_fields = ("id",)
         # write_only_fields = ("products",)
 
-        # def create(self, validated_data):
-        #     # Создание нового объекта на основе validated_data
-        #     # и потом подчиненных строк?
-        #     return Order.objects.create(
-        #         firstname=validated_data["firstname"],
-        #         lastname=validated_data["lastname"],
-        #         phonenumber=validated_data["phonenumber"],
-        #         address=validated_data["address"],
-        #     )
+    def create(self, validated_data):
+        return Order.objects.create(
+            firstname=validated_data["firstname"],
+            lastname=validated_data["lastname"],
+            phonenumber=validated_data["phonenumber"],
+            address=validated_data["address"],
+        )
