@@ -80,6 +80,16 @@ class Product(models.Model):
         return self.name
 
 
+class RestaurantMenuItemDecoratedManager(models.Manager):
+    def get_queryset(self):
+        return (
+            RestaurantMenuItem.objects.filter(availability=True)
+            .order_by("product")
+            .prefetch_related("product")
+            .prefetch_related("restaurant")
+        )
+
+
 class RestaurantMenuItem(models.Model):
     restaurant = models.ForeignKey(
         Restaurant,
@@ -94,6 +104,9 @@ class RestaurantMenuItem(models.Model):
         verbose_name="продукт",
     )
     availability = models.BooleanField("в продаже", default=True, db_index=True)
+
+    objects = models.Manager()  # The default manager.
+    objects_decorated = RestaurantMenuItemDecoratedManager()  # Our custom manager.
 
     class Meta:
         verbose_name = "пункт меню ресторана"

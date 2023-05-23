@@ -126,12 +126,7 @@ def view_orders(request):
     order_items = OrderItem.objects.filter(filters).prefetch_related("product")
 
     availability = dict()
-    for el in (
-        RestaurantMenuItem.objects.filter(availability=True)
-        .order_by("product")
-        .prefetch_related("product")
-        .prefetch_related("restaurant")
-    ):
+    for el in RestaurantMenuItem.objects_decorated.all():
         if el.product in availability.keys():
             availability[el.product].append(el.restaurant)
         else:
