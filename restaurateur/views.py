@@ -170,8 +170,11 @@ def view_orders(request):
 
 
 def calc_distance(adress1, adress2):
-    coord1 = fetch_coordinates(adress1)
-    coord2 = fetch_coordinates(adress2)
+    try:
+        coord1 = fetch_coordinates(adress1)
+        coord2 = fetch_coordinates(adress2)
+    except:
+        return None
 
     if not coord1 or not coord2:
         return None
