@@ -76,22 +76,18 @@ def product_list_api(request):
 @transaction.atomic
 @api_view(["POST"])
 def register_order(request):
-    if request.method == "POST":
-        order_serializer = OrderSerializer(data=request.data)
-        if order_serializer.is_valid(raise_exception=True):
-            new_order = order_serializer.save()
+    order_serializer = OrderSerializer(data=request.data)
+    if order_serializer.is_valid(raise_exception=True):
+        new_order = order_serializer.save()
 
-            for item in order_serializer.validated_data["products"]:
-                product = item["product"]
-                new_item = OrderItem(
-                    order=new_order,
-                    product=product,
-                    price=product.price,
-                    quantity=item["quantity"],
-                )
-                new_item.save()
+        for item in order_serializer.validated_data["products"]:
+            product = item["product"]
+            new_item = OrderItem(
+                order=new_order,
+                product=product,
+                price=product.price,
+                quantity=item["quantity"],
+            )
+            new_item.save()
 
-        return Response(OrderSerializer(new_order).data, status=status.HTTP_201_CREATED)
-
-    else:
-        return HttpResponseBadRequest("Invalid request method")
+    return Response(OrderSerializer(new_order).data, status=status.HTTP_201_CREATED)
