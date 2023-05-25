@@ -22,12 +22,22 @@ class OrderSerializer(serializers.ModelSerializer):
             "products",
         ]
         read_only_fields = ("id",)
-        # write_only_fields = ("products",)
 
     def create(self, validated_data):
-        return Order.objects.create(
+        new_order = Order.objects.create(
             firstname=validated_data["firstname"],
             lastname=validated_data["lastname"],
             phonenumber=validated_data["phonenumber"],
             address=validated_data["address"],
         )
+
+        for item in validated_data["products"]:
+            product = item["product"]
+            OrderItem.objects.create(
+                order=new_order,
+                product=product,
+                price=product.price,
+                quantity=item["quantity"],
+            )
+
+        return new_order
