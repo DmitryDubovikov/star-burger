@@ -16,7 +16,7 @@ SECRET_KEY = env("SECRET_KEY")
 YANDEX_GEOCODER_API_KEY = env("YANDEX_GEOCODER_API_KEY")
 DEBUG = env.bool("DEBUG", False)
 
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", ["127.0.0.1", "localhost"])
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", ["127.0.0.1", "localhost", "77.105.168.57"])
 
 INSTALLED_APPS = [
     "foodcartapp.apps.FoodcartappConfig",
