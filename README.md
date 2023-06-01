@@ -64,6 +64,11 @@ SECRET_KEY=django-insecure-0if40nf4nf93n4
 YANDEX_GEOCODER_API_KEY=your_yandex_api_key
 ```
 
+В файле `.env` в каталоге `star_burger/` добавьте ROLLBAR access_token (полученный в кабинете разработчика Яндекса):
+```sh
+ROLLBAR_TOKEN=your_rollbar_access_token
+```
+
 Создайте файл базы данных SQLite и отмигрируйте её следующей командой:
 
 ```sh
