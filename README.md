@@ -158,6 +158,23 @@ Parcel будет следить за файлами в каталоге `bundle
 - `SECRET_KEY` — секретный ключ проекта. Он отвечает за шифрование на сайте. Например, им зашифрованы все пароли на вашем сайте.
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
 
+Настроить POSTGRES: добавить в .env файл переменные для POSTGRES
+```
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+POSTGRES_DB=
+```
+Сбилдить образ POSTGRES и запустить контейнер POSTGRES:
+```
+docker build -t my-postgres .
+docker run -d -p 5432:5432 -v my-postgres-data:/var/lib/postgresql/data --name my-postgres my-postgres
+```
+Загрузить данные в БД:
+```
+python ./manage.py migrate
+python -Xutf8 ./manage.py loaddata datan.json
+```
+
 ## Цели проекта
 
 Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org). За основу был взят код проекта [FoodCart](https://github.com/Saibharath79/FoodCart).
