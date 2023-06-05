@@ -174,6 +174,12 @@ docker run -d -p 5432:5432 -v my-postgres-data:/var/lib/postgresql/data --name m
 python ./manage.py migrate
 python -Xutf8 ./manage.py loaddata datan.json
 ```
+При возникновении ошибки загрузки вида duplicate key value violates unique constraint "django_content_type_app_label_model_76bd3d3b_uniq"
+DETAIL:  Key (app_label, model)=(admin, logentry) already exists. выполнить 
+```
+from django.contrib.contenttypes.models import ContentType
+ContentType.objects.all().delete()
+```
 
 ## Цели проекта
 
