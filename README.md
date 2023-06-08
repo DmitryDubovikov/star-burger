@@ -180,6 +180,12 @@ DETAIL:  Key (app_label, model)=(admin, logentry) already exists. выполни
 from django.contrib.contenttypes.models import ContentType
 ContentType.objects.all().delete()
 ```
+## Как обновить всё с помощью деплой-баш-скрипта
+Запустить баш-скрипт:
+```
+/root/deploy_star_burger.sh
+```
+
 
 ## Цели проекта
 
