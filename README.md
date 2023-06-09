@@ -185,6 +185,10 @@ ContentType.objects.all().delete()
 ```
 /root/deploy_star_burger.sh
 ```
+## Ссылка на работающий сайт
+```
+https://somerandompythoncode.ru/
+```
 
 
 ## Цели проекта
