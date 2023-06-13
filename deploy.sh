@@ -19,10 +19,10 @@ echo "Collecting static..."
 python3 ./manage.py collectstatic  --noinput
 
 echo "Installing Node.js packages..."
-#npm ci --dev
+npm ci --dev
 
 echo "Frontend building.."
-#./node_modules/.bin/parcel watch bundles-src/index.js --dist-dir bundles --public-url="./"
+./node_modules/.bin/parcel build bundles-src/index.js --dist-dir bundles --public-url="./"
 
 echo "Reloading nginx..."
 systemctl reload nginx
