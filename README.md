@@ -158,11 +158,9 @@ Parcel будет следить за файлами в каталоге `bundle
 - `SECRET_KEY` — секретный ключ проекта. Он отвечает за шифрование на сайте. Например, им зашифрованы все пароли на вашем сайте.
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
 
-Настроить POSTGRES: добавить в .env файл переменные для POSTGRES
+Настроить POSTGRES: добавить в .env файл переменную DB_URL для POSTGRES
 ```
-POSTGRES_USER=
-POSTGRES_PASSWORD=
-POSTGRES_DB=
+DB_URL='postgresql://<username>:<password>@<host>:<port>/<database_name>'
 ```
 Сбилдить образ POSTGRES и запустить контейнер POSTGRES:
 ```
