@@ -19,7 +19,7 @@ Host myselectel
 ```
 ubuntu: /etc/ssh/sshd_config
 ```
-проверить, что у меня в убунту
+дописать, что у меня в убунту
 ...
 ```
 
@@ -79,9 +79,49 @@ root@formidable-cusna:/etc/systemd/system# systemctl status nginx
 
 ```
 
+# step 11-13 Nginx config
+
+```
+root@formidable-cusna:/etc/nginx/sites-enabled# cat default
+server {
+    server_name  somerandompythoncode.ru  www.somerandompythoncode.ru;
+
+    location / {
+        include '/etc/nginx/proxy_params';
+        proxy_pass http://127.0.0.1:8080;
+    }
+
+    location /media/ {
+        alias /opt/star-burger/media/;
+    }
+
+    location /static/ {
+        alias /opt/star-burger/static/;
+    }
 
 
-# step ? Docker Container for Postgres
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/somerandompythoncode.ru/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/somerandompythoncode.ru/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+server {
+    if ($host = somerandompythoncode.ru) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    listen 77.105.168.57:80;
+    server_name  somerandompythoncode.ru  www.somerandompythoncode.ru;
+    return 404; # managed by Certbot
+
+
+}
+```
+
+# step 16 Postgres: Docker Container for Postgres
 ```
 root@formidable-cusna:/etc/systemd/system# cat dockerpostgres.service
 [Unit]
@@ -97,3 +137,71 @@ ExecStop=/usr/bin/docker stop my-postgres
 WantedBy=default.target
 ```
 
+# step 17
+postgresql.service теперь в зависимостях у star-burger.service:
+```
+root@formidable-cusna:/etc/systemd/system# cat star-burger.service
+...
+Description=Django micro-service to serve star_burger project
+Requires=dockerpostgres.service
+...
+```
+
+# step 19-20
+certbot-renewal.service
+```
+root@formidable-cusna:/etc/systemd/system# cat certbot-renewal.service
+[Unit]
+Description=Certbot Renewal
+
+[Service]
+ExecStart=/usr/bin/certbot renew --force-renewal --post-hook "systemctl reload nginx.service"
+```
+certbot-renewal.timer
+```
+root@formidable-cusna:/etc/systemd/system# cat certbot-renewal.timer
+[Unit]
+Description=Timer for Certbot Renewal
+
+[Timer]
+OnBootSec=300
+OnUnitActiveSec=1w
+
+[Install]
+WantedBy=multi-user.target
+```
+# step 21-23
+В проекте на гите лежит deploy.sh
+Если его git pull на сервер, то после этого потребуется 
+```
+chmod u+x deploy.sh
+```
+
+# step 24
+```
+root@formidable-cusna:/etc/systemd/system# cat starburger-clearsessions.service
+[Unit]
+Description=Clear Django sessions
+
+[Service]
+Type=oneshot
+ExecStart=/opt/star-burger/venv/bin/python3 /opt/star-burger/manage.py clearsessions
+
+[Install]
+WantedBy=multi-user.target
+```
+# step 25
+```
+root@formidable-cusna:/etc/systemd/system# cat starburger-clearsessions.timer
+[Unit]
+Description=Timer for starburger-clearsessions.service
+
+[Timer]
+Unit=starburger-clearsessions.service
+OnCalendar=weekly
+AccuracySec=1m
+Persistent=true
+
+[Install]
+WantedBy=multi-user.target
+```
